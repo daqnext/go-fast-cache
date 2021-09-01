@@ -6,104 +6,92 @@ import (
 	"time"
 )
 
-type LocalCache struct {
-	S *sortedset.SortedSet
+type localCache struct {
+	s          *sortedset.SortedSet
+	countLimit int64
 }
 
-var localCache *LocalCache
-
-func GetInstance() *LocalCache {
-	if localCache == nil {
-		localCache = &LocalCache{
-			S: sortedset.Make(),
-		}
+// New instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
+func New(intervalSecond int) *localCache {
+	cache := &localCache{
+		s:          sortedset.Make(),
+		countLimit: 100000,
 	}
-	return localCache
+	cache.scheduleDeleteExpire(intervalSecond)
+	return cache
 }
 
-//func (lc *LocalCache) SetCountLimit(limit uint){
-//	lc.CountLimit=limit
-//}
+func (lc *localCache) SetCountLimit(limit int64) {
+	lc.countLimit = limit
+}
 
-func (lc *LocalCache) Get(key interface{}) (value interface{}, exist bool) {
+func (lc *localCache) Get(key string) (value interface{}, ttl int64, exist bool) {
 	//check expire
-	e, exist := lc.S.Get(key)
+	e, exist := lc.s.Get(key)
 	if !exist {
-		return nil, false
+		return nil, 0, false
 	}
 	if e.Score < time.Now().Unix() {
-		return nil, false
+		return nil, 0, false
 	}
-	return e.Value, true
+	return e.Value, e.Score - time.Now().Unix(), true
 }
 
-// Set Set key value with expire time, ttl.Keep,ttl.Infinity,or time.Duration. if key not exist and set ttl ttl.Keep,it will use default ttl 5min
-func (lc *LocalCache) Set(key interface{}, value interface{}, ttl time.Duration) {
+// Set Set key value with expire time, ttl.Keep or second. if key not exist and set ttl ttl.Keep,it will use default ttl 5min
+func (lc *localCache) Set(key string, value interface{}, ttlSecond int64) {
+	currentCount := lc.s.Len()
+	//delete 20%
+	deleteCount := currentCount / 5
+	if deleteCount < 1 {
+		deleteCount = 1
+	}
+	if currentCount >= lc.countLimit {
+		lc.s.RemoveByRank(0, deleteCount)
+	}
 
-	expireTime := int64(ttltype.Infinity)
+	if ttlSecond > 7200 {
+		ttlSecond = 7200
+	}
+	expireTime := int64(0)
 
-	if ttl == ttltype.Keep {
+	if ttlSecond == ttltype.Keep {
 		//keep
 		var exist bool
-		expireTime, exist = lc.TTL(key)
+		expireTime, exist = lc.ttl(key)
 		if !exist {
-			expireTime = time.Now().Add(time.Minute * 5).Unix()
+			expireTime = time.Now().Unix() + 300
 		}
-	} else if ttl < ttltype.Infinity {
-		//no expire
-		expireTime = -1
 	} else {
+		if ttlSecond < 1 {
+			return
+		}
 		//new expire
-		expireTime = time.Now().Add(ttl).Unix()
+		expireTime = time.Now().Unix() + ttlSecond
 	}
-	lc.S.Add(key.(string), expireTime, value)
+	lc.s.Add(key, expireTime, value)
 }
-
-//func (lc *LocalCache) SetEx(key interface{}, ttl time.Duration) bool {
-//	if !lc.IsExist(key){
-//		return false
-//	}
-//
-//	expireTime:=int64(ttltype.Infinity)
-//
-//	if ttl == ttltype.Keep {
-//		//keep
-//		var exist bool
-//		expireTime,exist=lc.TTL(key)
-//		if !exist {
-//			expireTime=time.Now().Add(time.Minute*5).Unix()
-//		}
-//	} else if ttl < ttltype.Infinity {
-//		//no expire
-//		expireTime=-1
-//	} else {
-//		//new expire
-//		expireTime=time.Now().Add(ttl).Unix()
-//	}
-//	lc.S.Add(key.(string),expireTime,value)
-//}
 
 // IsExist is key exist
-func (lc *LocalCache) IsExist(key interface{}) bool {
-	//check expire
-	e, exist := lc.S.Get(key.(string))
-	if !exist {
-		return false
-	}
-	if e.Score < time.Now().Unix() {
-		return false
-	}
-	return true
-}
+//func (lc *localCache) IsExist(key string) bool {
+//	//check expire
+//	e, exist := lc.s.Get(key)
+//	if !exist {
+//		return false
+//	}
+//	if e.Score < time.Now().Unix() {
+//		return false
+//	}
+//	return true
+//}
 
 // Remove remove a key
-func (lc *LocalCache) Remove(key interface{}) {
-	lc.S.Remove(key.(string))
-}
+//func (lc *localCache) Remove(key string) {
+//	lc.s.Remove(key)
+//}
 
-// TTL get ttl of a key with second, if <0 means no expire time
-func (lc *LocalCache) TTL(key interface{}) (int64, bool) {
-	e, exist := lc.S.Get(key.(string))
+// TTL get ttl of a key with second
+func (lc *localCache) ttl(key string) (int64, bool) {
+	e, exist := lc.s.Get(key)
 	if !exist {
 		return 0, false
 	}
@@ -115,14 +103,18 @@ func (lc *LocalCache) TTL(key interface{}) (int64, bool) {
 }
 
 // ScheduleDeleteExpire delete expired keys
-func (lc *LocalCache) ScheduleDeleteExpire(interval time.Duration) {
+func (lc *localCache) scheduleDeleteExpire(intervalSecond int) {
+	if intervalSecond <= 0 {
+		intervalSecond = 5
+	}
+	interval := time.Second * time.Duration(intervalSecond)
 	go func() {
 		for {
 			time.Sleep(interval)
 			min := int64(0)
 			max := time.Now().Unix()
 			//get expired keys
-			lc.S.RemoveByScore(min, max)
+			lc.s.RemoveByScore(min, max)
 		}
 	}()
 }
