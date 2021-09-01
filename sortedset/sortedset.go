@@ -6,33 +6,34 @@ import (
 
 // SortedSet is a set which keys sorted by bound score
 type SortedSet struct {
-	dict     map[string]*Element
+	dict     map[interface{}]*Element
 	skiplist *skiplist
 }
 
 // Make makes a new SortedSet
 func Make() *SortedSet {
 	return &SortedSet{
-		dict:     make(map[string]*Element),
+		dict:     make(map[interface{}]*Element),
 		skiplist: makeSkiplist(),
 	}
 }
 
 // Add puts member into set,  and returns whether has inserted new node
-func (sortedSet *SortedSet) Add(member string, score float64) bool {
+func (sortedSet *SortedSet) Add(member interface{}, score int64, value interface{}) bool {
 	element, ok := sortedSet.dict[member]
 	sortedSet.dict[member] = &Element{
 		Member: member,
 		Score:  score,
+		Value:  value,
 	}
 	if ok {
 		if score != element.Score {
 			sortedSet.skiplist.remove(member, element.Score)
-			sortedSet.skiplist.insert(member, score)
+			sortedSet.skiplist.insert(member, score, value)
 		}
 		return false
 	}
-	sortedSet.skiplist.insert(member, score)
+	sortedSet.skiplist.insert(member, score, value)
 	return true
 }
 
@@ -42,7 +43,7 @@ func (sortedSet *SortedSet) Len() int64 {
 }
 
 // Get returns the given member
-func (sortedSet *SortedSet) Get(member string) (element *Element, ok bool) {
+func (sortedSet *SortedSet) Get(member interface{}) (element *Element, ok bool) {
 	element, ok = sortedSet.dict[member]
 	if !ok {
 		return nil, false
@@ -51,7 +52,7 @@ func (sortedSet *SortedSet) Get(member string) (element *Element, ok bool) {
 }
 
 // Remove removes the given member from set
-func (sortedSet *SortedSet) Remove(member string) bool {
+func (sortedSet *SortedSet) Remove(member interface{}) bool {
 	v, ok := sortedSet.dict[member]
 	if ok {
 		sortedSet.skiplist.remove(member, v.Score)
@@ -62,7 +63,7 @@ func (sortedSet *SortedSet) Remove(member string) bool {
 }
 
 // GetRank returns the rank of the given member, sort by ascending order, rank starts from 0
-func (sortedSet *SortedSet) GetRank(member string, desc bool) (rank int64) {
+func (sortedSet *SortedSet) GetRank(member interface{}, desc bool) (rank int64) {
 	element, ok := sortedSet.dict[member]
 	if !ok {
 		return -1
@@ -78,7 +79,7 @@ func (sortedSet *SortedSet) GetRank(member string, desc bool) (rank int64) {
 
 // ForEach visits each member which rank within [start, stop), sort by ascending order, rank starts from 0
 func (sortedSet *SortedSet) ForEach(start int64, stop int64, desc bool, consumer func(element *Element) bool) {
-	size := int64(sortedSet.Len())
+	size := sortedSet.Len()
 	if start < 0 || start >= size {
 		panic("illegal start " + strconv.FormatInt(start, 10))
 	}
@@ -91,12 +92,12 @@ func (sortedSet *SortedSet) ForEach(start int64, stop int64, desc bool, consumer
 	if desc {
 		node = sortedSet.skiplist.tail
 		if start > 0 {
-			node = sortedSet.skiplist.getByRank(int64(size - start))
+			node = sortedSet.skiplist.getByRank(size - start)
 		}
 	} else {
 		node = sortedSet.skiplist.header.level[0].forward
 		if start > 0 {
-			node = sortedSet.skiplist.getByRank(int64(start + 1))
+			node = sortedSet.skiplist.getByRank(start + 1)
 		}
 	}
 
@@ -127,16 +128,16 @@ func (sortedSet *SortedSet) Range(start int64, stop int64, desc bool) []*Element
 }
 
 // Count returns the number of  members which score within the given border
-func (sortedSet *SortedSet) Count(min float64, max float64) int64 {
+func (sortedSet *SortedSet) Count(min int64, max int64) int64 {
 	var i int64 = 0
 	// ascending order
 	sortedSet.ForEach(0, sortedSet.Len(), false, func(element *Element) bool {
-		gtMin := min < (element.Score) // greater than min
+		gtMin := min <= (element.Score) // greater than min
 		if !gtMin {
 			// has not into range, continue foreach
 			return true
 		}
-		ltMax := max > (element.Score) // less than max
+		ltMax := max >= (element.Score) // less than max
 		if !ltMax {
 			// break through score border, break foreach
 			return false
@@ -171,7 +172,7 @@ func (sortedSet *SortedSet) Count(min float64, max float64) int64 {
 //}
 
 // ForEachByScore visits members which score within the given border
-func (sortedSet *SortedSet) ForEachByScore(min float64, max float64, offset int64, limit int64, desc bool, consumer func(element *Element) bool) {
+func (sortedSet *SortedSet) ForEachByScore(min int64, max int64, offset int64, limit int64, desc bool, consumer func(element *Element) bool) {
 	// find start node
 	var node *node
 	if desc {
@@ -212,7 +213,7 @@ func (sortedSet *SortedSet) ForEachByScore(min float64, max float64, offset int6
 
 // RangeByScore returns members which score within the given border
 // param limit: <0 means no limit
-func (sortedSet *SortedSet) RangeByScore(min float64, max float64, offset int64, limit int64, desc bool) []*Element {
+func (sortedSet *SortedSet) RangeByScore(min int64, max int64, offset int64, limit int64, desc bool) []*Element {
 	if limit == 0 || offset < 0 {
 		return make([]*Element, 0)
 	}
@@ -239,7 +240,7 @@ func (sortedSet *SortedSet) RangeByScore(min float64, max float64, offset int64,
 //}
 
 // RemoveByScore removes members which score within the given border
-func (sortedSet *SortedSet) RemoveByScore(min float64, max float64) int64 {
+func (sortedSet *SortedSet) RemoveByScore(min int64, max int64) int64 {
 	removed := sortedSet.skiplist.RemoveRangeByScore(min, max)
 	for _, element := range removed {
 		delete(sortedSet.dict, element.Member)
