@@ -2,6 +2,7 @@ package sortedset
 
 import (
 	"math/rand"
+	"sync"
 )
 
 const (
@@ -34,14 +35,11 @@ type skiplist struct {
 	tail   *node
 	length int64
 	level  int16
+	lock   sync.Mutex
 }
 
 func makeNode(level int16, score int64, member string) *node {
 	n := &node{
-		//Element: Element{
-		//
-		//	Value:  value,
-		//},
 		Score:  score,
 		Member: member,
 		level:  make([]*Level, level),
@@ -70,7 +68,7 @@ func randomLevel() int16 {
 	return maxLevel
 }
 
-func (skiplist *skiplist) insert(member string, score int64) *node {
+func (skiplist *skiplist) insert(member string, score int64) {
 	update := make([]*node, maxLevel) // link new node with node in `update`
 	rank := make([]int64, maxLevel)
 
@@ -133,7 +131,6 @@ func (skiplist *skiplist) insert(member string, score int64) *node {
 		skiplist.tail = node
 	}
 	skiplist.length++
-	return node
 }
 
 /*
@@ -163,7 +160,7 @@ func (skiplist *skiplist) removeNode(node *node, update []*node) {
 /*
  * return: has found and removed node
  */
-func (skiplist *skiplist) remove(member string, score int64) bool {
+func (skiplist *skiplist) remove(member string, score int64) {
 	/*
 	 * find backward node (of target) or last node of each level
 	 * their forward need to be updated
@@ -182,10 +179,7 @@ func (skiplist *skiplist) remove(member string, score int64) bool {
 	node = node.level[0].forward
 	if node != nil && score == node.Score && node.Member == member {
 		skiplist.removeNode(node, update)
-		// free x
-		return true
 	}
-	return false
 }
 
 /*

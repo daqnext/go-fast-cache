@@ -3,13 +3,18 @@ package meson_network_lts_local_cache
 import (
 	"github.com/daqnext/meson.network-lts-local-cache/sortedset"
 	"github.com/daqnext/meson.network-lts-local-cache/ttltype"
+	"math/rand"
+	"sync"
 	"time"
 )
 
 type localCache struct {
 	s          *sortedset.SortedSet
 	countLimit int64
+	lock       sync.Mutex
 }
+
+const MaxTTL = int64(5000000000)
 
 // New instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
 func New(intervalSecond int) *localCache {
@@ -39,14 +44,20 @@ func (lc *localCache) Get(key string) (value interface{}, ttl int64, exist bool)
 
 // Set Set key value with expire time, ttl.Keep or second. if key not exist and set ttl ttl.Keep,it will use default ttl 5min
 func (lc *localCache) Set(key string, value interface{}, ttlSecond int64) {
+	//lc.lock.Lock()
+	//defer lc.lock.Unlock()
 	currentCount := lc.s.Len()
-	//delete 20%
-	deleteCount := currentCount / 5
-	if deleteCount < 1 {
-		deleteCount = 1
-	}
-	if currentCount >= lc.countLimit {
-		lc.s.RemoveByRank(0, deleteCount)
+	if currentCount >= lc.countLimit && rand.Intn(10) < 1 {
+		lc.lock.Lock()
+		if lc.s.Len() >= lc.countLimit {
+			//delete 20%
+			deleteCount := currentCount / 7
+			if deleteCount < 1 {
+				deleteCount = 1
+			}
+			lc.s.RemoveByRank(0, deleteCount)
+		}
+		lc.lock.Unlock()
 	}
 
 	if ttlSecond > 7200 {
@@ -113,8 +124,12 @@ func (lc *localCache) scheduleDeleteExpire(intervalSecond int) {
 			time.Sleep(interval)
 			min := int64(0)
 			max := time.Now().Unix()
-			//get expired keys
+			//remove expired keys
 			lc.s.RemoveByScore(min, max)
 		}
 	}()
+}
+
+func (lc *localCache) getLen() int64 {
+	return lc.s.Len()
 }

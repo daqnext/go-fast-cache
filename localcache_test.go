@@ -2,7 +2,9 @@ package meson_network_lts_local_cache
 
 import (
 	"log"
+	"math/rand"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 )
@@ -69,21 +71,73 @@ func Test_BigAmountKey(t *testing.T) {
 	}
 	a := Person{"Jack", 18, "America"}
 	lc := New(1)
-	lc.SetCountLimit(10000000)
+	lc.SetCountLimit(10000)
 
-	for i := 0; i < 10000000; i++ {
-		j := i % 10000
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		wg.Add(100000)
+		for i := 0; i < 100000; i++ {
+			j := i % 50000
+			go func() {
+				//log.Println("key",j)
+				time.Sleep(time.Duration(rand.Intn(5000)) * time.Millisecond)
+				lc.Set(strconv.Itoa(j), a, int64(rand.Intn(10)+1))
+				wg.Done()
+			}()
+		}
+		wg.Done()
+	}()
 
-		lc.Set(strconv.Itoa(j), a, 1+int64(j))
+	time.Sleep(time.Millisecond * 100)
+	go func() {
+		for i := 0; i < 1000000; i++ {
+			j := i % 10000
 
+			lc.Get(strconv.Itoa(j))
+
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
+
+	for {
+		time.Sleep(1 * time.Second)
+		log.Println("count length", lc.getLen())
+		log.Println("skiplist length", lc.s.SLen())
+		log.Println("map length", lc.s.MapLen())
 	}
 
-	e, ttl, exist := lc.Get("1")
+	log.Println(lc.getLen())
+
+	e, ttl, exist := lc.Get("0")
 	if exist {
 		log.Println(e.(Person).Name)
 	}
 	log.Println(ttl)
 	log.Println(exist)
+}
+
+func Test_RemoveByRank(t *testing.T) {
+	lc := New(0)
+	for i := 0; i < 100; i++ {
+		lc.Set(strconv.Itoa(i), strconv.Itoa(i), 60+int64(i))
+	}
+
+	lc.s.RemoveByRank(0, 10)
+	lc.s.RemoveByRank(0, 10)
+	lc.s.RemoveByRank(0, 10)
+	lc.s.RemoveByRank(0, 10)
+	lc.s.RemoveByRank(0, 10)
+
+	log.Println(lc.s.Len())
+
+	e := lc.s.RangeByScore(0, MaxTTL, 0, -1, false)
+	for _, v := range e {
+		log.Println(v.Member, v.Value)
+	}
+
 }
 
 func BenchmarkLocalCache_SetPointer(b *testing.B) {
