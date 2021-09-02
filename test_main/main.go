@@ -11,7 +11,7 @@ type Person struct {
 }
 
 func main() {
-	lc := localcache.New(0)
+	lc := localcache.New()  // or use NewWithInterval(intervalSecond int) custom the schedule job interval
 	lc.SetCountLimit(10000) //if not set default is 100000
 
 	//set
@@ -32,7 +32,6 @@ func main() {
 	//set cover
 	log.Println("---cover set---")
 	log.Println(lc.Get("c"))
-	lc.Set("c", false, 60) //never expire
+	lc.Set("c", false, 60)
 	log.Println(lc.Get("c"))
-
 }

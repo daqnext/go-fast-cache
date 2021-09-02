@@ -155,12 +155,6 @@ func (skiplist *skiplist) removeNode(node *node, update []*node) {
 		skiplist.level--
 	}
 	skiplist.length--
-
-	//node.Member=""
-	//node.Score=0
-	//node.backward = nil
-	//node.level = nil
-	//node=nil
 }
 
 /*
@@ -248,24 +242,6 @@ func (skiplist *skiplist) hasInRange(min int64, max int64) bool {
 	return true
 }
 
-//func (skiplist *skiplist) hasInRange(min *ScoreBorder, max *ScoreBorder) bool {
-//	// min & max = empty
-//	if min.Value > max.Value || (min.Value == max.Value && (min.Exclude || max.Exclude)) {
-//		return false
-//	}
-//	// min > tail
-//	n := skiplist.tail
-//	if n == nil || !min.less(n.Score) {
-//		return false
-//	}
-//	// max < head
-//	n = skiplist.header.level[0].forward
-//	if n == nil || !max.greater(n.Score) {
-//		return false
-//	}
-//	return true
-//}
-
 func (skiplist *skiplist) getFirstInScoreRange(min int64, max int64) *node {
 	if !skiplist.hasInRange(min, max) {
 		return nil
@@ -286,26 +262,6 @@ func (skiplist *skiplist) getFirstInScoreRange(min int64, max int64) *node {
 	return n
 }
 
-//func (skiplist *skiplist) getFirstInScoreRange(min *ScoreBorder, max *ScoreBorder) *node {
-//	if !skiplist.hasInRange(min, max) {
-//		return nil
-//	}
-//	n := skiplist.header
-//	// scan from top level
-//	for level := skiplist.level - 1; level >= 0; level-- {
-//		// if forward is not in range than move forward
-//		for n.level[level].forward != nil && !min.less(n.level[level].forward.Score) {
-//			n = n.level[level].forward
-//		}
-//	}
-//	/* This is an inner range, so the next node cannot be NULL. */
-//	n = n.level[0].forward
-//	if !max.greater(n.Score) {
-//		return nil
-//	}
-//	return n
-//}
-
 func (skiplist *skiplist) getLastInScoreRange(min int64, max int64) *node {
 	if !skiplist.hasInRange(min, max) {
 		return nil
@@ -322,23 +278,6 @@ func (skiplist *skiplist) getLastInScoreRange(min int64, max int64) *node {
 	}
 	return n
 }
-
-//func (skiplist *skiplist) getLastInScoreRange(min *ScoreBorder, max *ScoreBorder) *node {
-//	if !skiplist.hasInRange(min, max) {
-//		return nil
-//	}
-//	n := skiplist.header
-//	// scan from top level
-//	for level := skiplist.level - 1; level >= 0; level-- {
-//		for n.level[level].forward != nil && max.greater(n.level[level].forward.Score) {
-//			n = n.level[level].forward
-//		}
-//	}
-//	if !min.less(n.Score) {
-//		return nil
-//	}
-//	return n
-//}
 
 /*
  * return removed elements
@@ -374,41 +313,6 @@ func (skiplist *skiplist) RemoveRangeByScore(min int64, max int64) (removed []st
 	}
 	return removed
 }
-
-/*
- * return removed elements
- */
-//func (skiplist *skiplist) RemoveRangeByScore(min *ScoreBorder, max *ScoreBorder) (removed []*Element) {
-//	update := make([]*node, maxLevel)
-//	removed = make([]*Element, 0)
-//	// find backward nodes (of target range) or last node of each level
-//	node := skiplist.header
-//	for i := skiplist.level - 1; i >= 0; i-- {
-//		for node.level[i].forward != nil {
-//			if min.less(node.level[i].forward.Score) { // already in range
-//				break
-//			}
-//			node = node.level[i].forward
-//		}
-//		update[i] = node
-//	}
-//
-//	// node is the first one within range
-//	node = node.level[0].forward
-//
-//	// remove nodes in range
-//	for node != nil {
-//		if !max.greater(node.Score) { // already out of range
-//			break
-//		}
-//		next := node.level[0].forward
-//		removedElement := node.Element
-//		removed = append(removed, &removedElement)
-//		skiplist.removeNode(node, update)
-//		node = next
-//	}
-//	return removed
-//}
 
 // 1-based rank, including start, exclude stop
 func (skiplist *skiplist) RemoveRangeByRank(start int64, stop int64) (removed []string) {

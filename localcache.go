@@ -16,8 +16,18 @@ type localCache struct {
 
 const MaxTTL = int64(5000000000)
 
-// New instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
-func New(intervalSecond int) *localCache {
+// New Instance of localCache, the interval of scheduleDeleteExpire job use the default value 5 seconds
+func New() *localCache {
+	cache := &localCache{
+		s:          sortedset.Make(),
+		countLimit: 100000,
+	}
+	cache.scheduleDeleteExpire(5)
+	return cache
+}
+
+// NewWithInterval Instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
+func NewWithInterval(intervalSecond int) *localCache {
 	cache := &localCache{
 		s:          sortedset.Make(),
 		countLimit: 100000,
@@ -80,24 +90,6 @@ func (lc *localCache) Set(key string, value interface{}, ttlSecond int64) {
 	}
 	lc.s.Add(key, expireTime, value)
 }
-
-// IsExist is key exist
-//func (lc *localCache) IsExist(key string) bool {
-//	//check expire
-//	e, exist := lc.s.Get(key)
-//	if !exist {
-//		return false
-//	}
-//	if e.Score < time.Now().Unix() {
-//		return false
-//	}
-//	return true
-//}
-
-// Remove remove a key
-//func (lc *localCache) Remove(key string) {
-//	lc.s.Remove(key)
-//}
 
 // TTL get ttl of a key with second
 func (lc *localCache) ttl(key string) (int64, bool) {
