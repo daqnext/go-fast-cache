@@ -2,17 +2,19 @@ package sortedset
 
 import (
 	"log"
+	"runtime"
 	"sync"
 	"sync/atomic"
 )
 
 // SortedSet is a set which keys sorted by bound score
 type SortedSet struct {
-	dict         sync.Map
-	skiplist     *skiplist
+	dict     sync.Map
+	skiplist *skiplist
+
 	elementCount int64
 	lock         sync.Mutex
-	slChannel    chan *channelFunc
+	slChannel    chan func()
 }
 
 // Make makes a new SortedSet
@@ -21,18 +23,10 @@ func Make() *SortedSet {
 	s := &SortedSet{
 		skiplist:     makeSkiplist(),
 		elementCount: 0,
-		slChannel:    make(chan *channelFunc, 20000),
+		slChannel:    make(chan func(), 20000),
 	}
 	s.handleChannelJob()
 	return s
-}
-
-type channelFunc struct {
-	f      func(member string, score int64)
-	member string
-	score  int64
-
-	f2 func()
 }
 
 func (sortedSet *SortedSet) handleChannelJob() {
@@ -40,7 +34,7 @@ func (sortedSet *SortedSet) handleChannelJob() {
 		for {
 			f := <-sortedSet.slChannel
 			sortedSet.lock.Lock()
-			f.f2()
+			f()
 			sortedSet.lock.Unlock()
 		}
 	}()
@@ -57,13 +51,13 @@ func (sortedSet *SortedSet) Add(member string, score int64, value interface{}) {
 	if !ok {
 		atomic.AddInt64(&sortedSet.elementCount, 1)
 		//sortedSet.elementCount++
-		log.Println("count after add", sortedSet.elementCount)
+		//log.Println("count after add", sortedSet.elementCount)
 
 		//todo send to channel
 		fc := func() {
 			sortedSet.skiplist.insert(member, score)
 		}
-		sortedSet.slChannel <- &channelFunc{sortedSet.skiplist.insert, member, score, fc}
+		sortedSet.slChannel <- fc
 		//sortedSet.skiplist.insert(member, score)
 	} else {
 		elementScore := element.(*Element).Score
@@ -74,7 +68,7 @@ func (sortedSet *SortedSet) Add(member string, score int64, value interface{}) {
 				sortedSet.skiplist.remove(member, elementScore)
 				sortedSet.skiplist.insert(member, score)
 			}
-			sortedSet.slChannel <- &channelFunc{sortedSet.skiplist.remove, member, elementScore, fc}
+			sortedSet.slChannel <- fc
 			//sortedSet.slChannel<-&channelFunc{sortedSet.skiplist.insert,member,score}
 			//sortedSet.skiplist.remove(member, elementScore)
 			//sortedSet.skiplist.insert(member, score)
@@ -284,7 +278,7 @@ func (sortedSet *SortedSet) RemoveByScore(min int64, max int64) int64 {
 	//sortedSet.elementCount-=int64(len(removed))
 	sortedSet.elementCount = sortedSet.SLen()
 	log.Println("count after RemoveByScore", "map len", sortedSet.elementCount, "list len", sortedSet.SLen())
-
+	runtime.GC()
 	return int64(len(removed))
 }
 
@@ -303,7 +297,6 @@ func (sortedSet *SortedSet) RemoveByRank(start int64, stop int64) int64 {
 	//sortedSet.elementCount-=int64(len(removed))
 	sortedSet.elementCount = sortedSet.SLen()
 	log.Println("count after RemoveByRank", "map len", sortedSet.elementCount, "list len", sortedSet.SLen())
-
+	//runtime.GC()
 	return int64(len(removed))
-
 }

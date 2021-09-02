@@ -155,6 +155,12 @@ func (skiplist *skiplist) removeNode(node *node, update []*node) {
 		skiplist.level--
 	}
 	skiplist.length--
+
+	//node.Member=""
+	//node.Score=0
+	//node.backward = nil
+	//node.level = nil
+	//node=nil
 }
 
 /*

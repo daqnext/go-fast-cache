@@ -26,6 +26,7 @@ func New(intervalSecond int) *localCache {
 	return cache
 }
 
+// SetCountLimit Key count limit,default is 100000. The 15% of the keys with the most recent expiration time will be deleted if the number of keys exceeds the limit.
 func (lc *localCache) SetCountLimit(limit int64) {
 	lc.countLimit = limit
 }
@@ -44,18 +45,16 @@ func (lc *localCache) Get(key string) (value interface{}, ttl int64, exist bool)
 
 // Set Set key value with expire time, ttl.Keep or second. if key not exist and set ttl ttl.Keep,it will use default ttl 5min
 func (lc *localCache) Set(key string, value interface{}, ttlSecond int64) {
-	//lc.lock.Lock()
-	//defer lc.lock.Unlock()
 	currentCount := lc.s.Len()
 	if currentCount >= lc.countLimit && rand.Intn(10) < 1 {
 		lc.lock.Lock()
 		if lc.s.Len() >= lc.countLimit {
-			//delete 20%
-			deleteCount := currentCount / 7
+			//delete 15%
+			deleteCount := float64(currentCount) * 0.15
 			if deleteCount < 1 {
 				deleteCount = 1
 			}
-			lc.s.RemoveByRank(0, deleteCount)
+			lc.s.RemoveByRank(0, int64(deleteCount))
 		}
 		lc.lock.Unlock()
 	}
