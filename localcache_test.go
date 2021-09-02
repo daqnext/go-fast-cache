@@ -91,7 +91,7 @@ func Test_BigAmountKey(t *testing.T) {
 
 	go func() {
 		for {
-			time.Sleep(1 * time.Second)
+			time.Sleep(5 * time.Second)
 			//runtime.ReadMemStats(&m)
 			//log.Printf("memstate %d,%d,%d,%d\n", m.HeapSys, m.HeapAlloc,
 			//	m.HeapIdle, m.HeapReleased)
@@ -116,6 +116,22 @@ func Test_BigAmountKey(t *testing.T) {
 	}
 	//wg.Done()
 	//}()
+
+	go func() {
+		for i := 0; i < 100; i++ {
+			//time.Sleep(20*time.Second)
+			log.Println("Start round", i+1)
+			for i := 0; i < 1000000; i++ {
+				//j := i % 1000000
+				//go func() {
+				//time.Sleep(time.Duration(rand.Intn(20000)) * time.Millisecond)
+				lc.Set(strconv.Itoa(i), a, int64(rand.Intn(10)+1))
+				//wg.Done()
+				//}()
+			}
+		}
+
+	}()
 
 	printMemStats()
 	//time.Sleep(time.Millisecond * 5000)
