@@ -1,6 +1,14 @@
 # go-fast-cache
 
-go-fast-cache is a high-speed, thread-safe, key-value caching system. All data keep in memory.
+go-fast-cache is a 
+high-speed,
+thread-safe, 
+key-value 
+caching system.
+All data is kept in memory.
+
+All expired data will be removed by background goroutine automatically.
+
 
 ## usage
 ```go
@@ -57,10 +65,11 @@ lc.SetCountLimit(10000) //custom the max key-value pair count
 
 ### key-value pair count over limit
 
-If the key-value pair count over the limit, 15% keys that already expired or the most recent expiration time will be deleted automatically.
+If the key-value pair reach DefaultCountLimit : 
+15% of the oldest expired key-value will be deleted  automatically by background routine asap.
 
 
-### some limit
+### Default limit
 ```
 MaxTTLSecond: 7200 seconds(2 hours)
 
