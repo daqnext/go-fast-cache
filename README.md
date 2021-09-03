@@ -4,6 +4,12 @@ go-fast-cache is a high-speed, thread-safe, key-value caching system. All data k
 
 ## usage
 ```go
+//import
+import (
+    localcache "github.com/daqnext/go-fast-cache"
+)
+```
+```go
 //new instance
 //new a localcache instance with default config
 //DefaultDeleteExpireIntervalSecond(Schedule job for delete expired key interval) is 5 seconds
