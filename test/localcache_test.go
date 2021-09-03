@@ -37,6 +37,16 @@ func Test_main(t *testing.T) {
 	lc.Set("c", true, 100)
 
 	//get
+	value, ttlLeft, exist := lc.Get("a")
+	if exist {
+		valueStr, ok := value.(string) //value type is interface{}, please convert to the right type before use
+		if ok {
+			log.Println(valueStr)
+		}
+		log.Println(ttlLeft)
+	}
+
+	//get
 	log.Println("---get---")
 	log.Println(lc.Get("foo"))
 	log.Println(lc.Get("a"))

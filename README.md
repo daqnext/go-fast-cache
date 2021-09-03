@@ -26,6 +26,16 @@ lc.Set("b*", &Person{"Jack", 18}, 300)
 lc.Set("c", true, 100)
 
 //get
+value,ttlLeft,exist:=lc.Get("a")
+if exist {
+	valueStr,ok:=value.(string) //value type is interface{}, please convert to the right type before use
+	if ok {
+		log.Println(valueStr)
+	}
+	log.Println(ttlLeft)
+}
+
+//get
 //Get(key string) (value interface{}, ttl int64, exist bool)
 log.Println("---get---")
 log.Println(lc.Get("foo"))
@@ -46,6 +56,16 @@ log.Println(lc.Get("c"))
 //new instance
 lc := localcache.NewWithInterval(20) //custom schedule job interval(second) for delete expired key
 lc.SetCountLimit(10000) //custom the max key-value pair count
+```
+
+### some limit
+```
+MaxTTLSecond: 7200 seconds(2 hours)
+DefaultCountLimit:1000000
+MinCountLimit:10000
+
+MaxDeleteExpireIntervalSecond:300 seconds
+DefaultDeleteExpireIntervalSecond:5 seconds
 ```
 
 ## Benchmark
