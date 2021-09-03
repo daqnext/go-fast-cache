@@ -1,4 +1,4 @@
-package meson_network_lts_local_cache
+package go_fast_cache
 
 import (
 	"github.com/daqnext/go-fast-cache/sortedset"

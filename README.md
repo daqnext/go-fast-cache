@@ -58,9 +58,15 @@ lc := localcache.NewWithInterval(20) //custom schedule job interval(second) for 
 lc.SetCountLimit(10000) //custom the max key-value pair count
 ```
 
+### key-value pair count over limit
+
+If the key-value pair count over the limit, 15% keys that already expired or the most recent expiration time will be deleted automatically.
+
+
 ### some limit
 ```
 MaxTTLSecond: 7200 seconds(2 hours)
+
 DefaultCountLimit:1000000
 MinCountLimit:10000
 
