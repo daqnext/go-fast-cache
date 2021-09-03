@@ -29,10 +29,7 @@ lc.Set("c", true, 100)
 value, ttlLeft, exist := lc.Get("foo")
 if exist {
     valueStr, ok := value.(string) //value type is interface{}, please convert to the right type before use
-    if ok {
-        log.Println("key:foo, value:",valueStr)
-    }
-    log.Println("key:foo, ttl:",ttlLeft)
+    log.Println("key:foo",",valuestr:",valueStr,",typeok:",ok,",ttlLeft:",ttlLeft)
 }
 
 //get
@@ -44,8 +41,8 @@ log.Println(lc.Get("b"))
 log.Println(lc.Get("b*"))
 log.Println(lc.Get("c"))
 
-//set cover
-log.Println("---cover set---")
+//overwrite
+log.Println("---set overwrite ---")
 log.Println(lc.Get("c"))
 lc.Set("c", false, 60)
 log.Println(lc.Get("c"))
