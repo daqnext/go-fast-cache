@@ -40,13 +40,13 @@ func (sortedSet *SortedSet) handleChannelJob() {
 
 // Add puts member into set,  and returns whether has inserted new node
 func (sortedSet *SortedSet) Add(member string, score int64, value interface{}) {
-	element, ok := sortedSet.dict.Load(member)
+	element, exist := sortedSet.dict.Load(member)
 	sortedSet.dict.Store(member, &Element{
 		Member: member,
 		Score:  score,
 		Value:  value,
 	})
-	if !ok {
+	if !exist {
 		atomic.AddInt64(&sortedSet.elementCount, 1)
 		//log.Println("count after add", sortedSet.elementCount)
 		fc := func() {
@@ -86,8 +86,8 @@ func (sortedSet *SortedSet) MapLen() int64 {
 
 // Get returns the given member
 func (sortedSet *SortedSet) Get(member string) (element *Element, ok bool) {
-	elementI, ok := sortedSet.dict.Load(member)
-	if !ok {
+	elementI, exist := sortedSet.dict.Load(member)
+	if !exist {
 		return nil, false
 	}
 	return elementI.(*Element), true
@@ -150,11 +150,11 @@ func (sortedSet *SortedSet) RangeByScore(min int64, max int64, offset int64, lim
 	return slice
 }
 
-// RemoveByScore removes members which score within the given border
-func (sortedSet *SortedSet) RemoveByScore(min int64, max int64) int64 {
+// RemoveByScore removes members which timestamp < now time
+func (sortedSet *SortedSet) RemoveByScore(max int64) int64 {
 
 	sortedSet.lock.Lock()
-	removed := sortedSet.skiplist.RemoveRangeByScore(min, max)
+	removed := sortedSet.skiplist.RemoveRangeByScore(0, max)
 	sortedSet.lock.Unlock()
 	for _, element := range removed {
 		sortedSet.dict.Delete(element)

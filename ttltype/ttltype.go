@@ -1,5 +1,5 @@
 package ttltype
 
 const (
-	Keep = int64(-1)
+	Keep = int64(0)
 )
