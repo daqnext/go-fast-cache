@@ -26,13 +26,13 @@ lc.Set("b*", &Person{"Jack", 18}, 300)
 lc.Set("c", true, 100)
 
 //get
-value,ttlLeft,exist:=lc.Get("a")
+value, ttlLeft, exist := lc.Get("foo")
 if exist {
-	valueStr,ok:=value.(string) //value type is interface{}, please convert to the right type before use
-	if ok {
-		log.Println(valueStr)
-	}
-	log.Println(ttlLeft)
+    valueStr, ok := value.(string) //value type is interface{}, please convert to the right type before use
+    if ok {
+        log.Println("key:foo, value:",valueStr)
+    }
+    log.Println("key:foo, ttl:",ttlLeft)
 }
 
 //get
