@@ -1,6 +1,6 @@
 # go-fast-cache
 
-local-cache is a high-speed, thread-safe, key-value caching system. All data keep in memory.
+go-fast-cache is a high-speed, thread-safe, key-value caching system. All data keep in memory.
 
 ## usage
 ```go
