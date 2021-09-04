@@ -54,8 +54,8 @@ func Test_main(t *testing.T) {
 	log.Println(lc.Get("b*"))
 	log.Println(lc.Get("c"))
 
-	//set cover
-	log.Println("---cover set---")
+	////overwrite
+	log.Println("---set overwrite---")
 	log.Println(lc.Get("c"))
 	lc.Set("c", false, 60)
 	log.Println(lc.Get("c"))

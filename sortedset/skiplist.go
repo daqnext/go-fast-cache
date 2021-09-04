@@ -11,9 +11,9 @@ const (
 
 // Element is a key-score pair
 type Element struct {
-	Member string
-	Score  int64
-	Value  interface{}
+	//Member string
+	Score int64
+	Value interface{}
 }
 
 // Level aspect of a node

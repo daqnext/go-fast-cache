@@ -42,9 +42,9 @@ func (sortedSet *SortedSet) handleChannelJob() {
 func (sortedSet *SortedSet) Add(member string, score int64, value interface{}) {
 	element, exist := sortedSet.dict.Load(member)
 	sortedSet.dict.Store(member, &Element{
-		Member: member,
-		Score:  score,
-		Value:  value,
+		//Member: member,
+		Score: score,
+		Value: value,
 	})
 	if !exist {
 		atomic.AddInt64(&sortedSet.elementCount, 1)

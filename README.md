@@ -34,6 +34,7 @@ lc.Set("b*", &Person{"Jack", 18}, 300)
 lc.Set("c", true, 100)
 
 //get
+//Get(key string) (value interface{}, ttl int64, exist bool)
 value, ttlLeft, exist := lc.Get("foo")
 if exist {
     valueStr, ok := value.(string) //value type is interface{}, please convert to the right type before use
@@ -41,7 +42,6 @@ if exist {
 }
 
 //get
-//Get(key string) (value interface{}, ttl int64, exist bool)
 log.Println("---get---")
 log.Println(lc.Get("foo"))
 log.Println(lc.Get("a"))
