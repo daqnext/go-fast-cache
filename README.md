@@ -7,7 +7,7 @@ key-value
 caching system.
 All data is kept in memory.
 
-All expired data will be removed by background goroutine automatically.
+All expired data will be removed by background go-routine automatically.
 
 
 ## usage
@@ -21,7 +21,7 @@ import (
 //new instance
 //new a localcache instance with default config
 //DefaultDeleteExpireIntervalSecond(Schedule job for delete expired key interval) is 5 seconds
-//DefaultCountLimit(Max key-value pair count) is 100,0000
+//DefaultCountLimit(Max key-value pair count) is 1000,000
 lc := localcache.New() 
 
 //set
