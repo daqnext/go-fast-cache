@@ -18,15 +18,15 @@ const (
 	DefaultDeleteOverLimitRate = 0.15
 )
 
-type localCache struct {
+type LocalCache struct {
 	s          *sortedset.SortedSet
 	countLimit int64
 	lock       sync.Mutex
 }
 
 // New Instance of localCache, the interval of scheduleDeleteExpire job use the default value 5 seconds
-func New() *localCache {
-	cache := &localCache{
+func New() *LocalCache {
+	cache := &LocalCache{
 		s:          sortedset.Make(),
 		countLimit: DefaultCountLimit,
 	}
@@ -36,14 +36,14 @@ func New() *localCache {
 }
 
 // NewWithInterval Instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
-func NewWithInterval(intervalSecond int) *localCache {
+func NewWithInterval(intervalSecond int) *LocalCache {
 	if intervalSecond > MaxDeleteExpireIntervalSecond {
 		intervalSecond = MaxDeleteExpireIntervalSecond
 	}
 	if intervalSecond < 1 {
 		intervalSecond = DefaultDeleteExpireIntervalSecond
 	}
-	cache := &localCache{
+	cache := &LocalCache{
 		s:          sortedset.Make(),
 		countLimit: DefaultCountLimit,
 	}
@@ -53,14 +53,14 @@ func NewWithInterval(intervalSecond int) *localCache {
 }
 
 // SetCountLimit Key count limit,default is 1000000. The 15% of the keys with the most recent expiration time will be deleted if the number of keys exceeds the limit.
-func (lc *localCache) SetCountLimit(limit int64) {
+func (lc *LocalCache) SetCountLimit(limit int64) {
 	if limit < MinCountLimit {
 		limit = MinCountLimit
 	}
 	lc.countLimit = limit
 }
 
-func (lc *localCache) Get(key string) (value interface{}, ttl int64, exist bool) {
+func (lc *LocalCache) Get(key string) (value interface{}, ttl int64, exist bool) {
 	//check expire
 	e, exist := lc.s.Get(key)
 	if !exist {
@@ -74,7 +74,7 @@ func (lc *localCache) Get(key string) (value interface{}, ttl int64, exist bool)
 }
 
 // Set Set key value with expire time, ttl.Keep or second. If key not exist and set ttl ttl.Keep,it will use default ttl 30sec
-func (lc *localCache) Set(key string, value interface{}, ttlSecond int64) {
+func (lc *LocalCache) Set(key string, value interface{}, ttlSecond int64) {
 	if ttlSecond < 0 {
 		return
 	}
@@ -99,7 +99,7 @@ func (lc *localCache) Set(key string, value interface{}, ttlSecond int64) {
 }
 
 // TTL get ttl of a key with second
-func (lc *localCache) ttl(key string) (int64, bool) {
+func (lc *LocalCache) ttl(key string) (int64, bool) {
 	e, exist := lc.s.Get(key)
 	if !exist {
 		return 0, false
@@ -111,7 +111,7 @@ func (lc *localCache) ttl(key string) (int64, bool) {
 	return ttl, true
 }
 
-func (lc *localCache) scheduleDeleteOverLimit() {
+func (lc *LocalCache) scheduleDeleteOverLimit() {
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 		for {
@@ -126,7 +126,7 @@ func (lc *localCache) scheduleDeleteOverLimit() {
 }
 
 // ScheduleDeleteExpire delete expired keys
-func (lc *localCache) scheduleDeleteExpire(intervalSecond int) {
+func (lc *LocalCache) scheduleDeleteExpire(intervalSecond int) {
 	go func() {
 		for {
 			time.Sleep(time.Duration(intervalSecond) * time.Second)
@@ -138,6 +138,6 @@ func (lc *localCache) scheduleDeleteExpire(intervalSecond int) {
 	}()
 }
 
-func (lc *localCache) GetLen() int64 {
+func (lc *LocalCache) GetLen() int64 {
 	return lc.s.Len()
 }
