@@ -1,7 +1,6 @@
 package go_fast_cache
 
 import (
-	"errors"
 	locallog "github.com/daqnext/LocalLog/log"
 	"github.com/daqnext/go-fast-cache/sortedset"
 	"github.com/daqnext/go-fast-cache/ttltype"
@@ -29,10 +28,7 @@ type LocalCache struct {
 }
 
 // New Instance of localCache, the interval of scheduleDeleteExpire job use the default value 5 seconds
-func New(logger *locallog.LocalLog) (*LocalCache, error) {
-	if logger == nil {
-		return nil, errors.New("logger is nil")
-	}
+func New(logger *locallog.LocalLog) *LocalCache {
 	cache := &LocalCache{
 		s:          sortedset.Make(),
 		countLimit: DefaultCountLimit,
@@ -40,14 +36,11 @@ func New(logger *locallog.LocalLog) (*LocalCache, error) {
 	}
 	cache.scheduleDeleteExpire(5)
 	cache.scheduleDeleteOverLimit()
-	return cache, nil
+	return cache
 }
 
 // NewWithInterval Instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
-func NewWithInterval(intervalSecond int, logger *locallog.LocalLog) (*LocalCache, error) {
-	if logger == nil {
-		return nil, errors.New("logger is nil")
-	}
+func NewWithInterval(intervalSecond int, logger *locallog.LocalLog) *LocalCache {
 	if intervalSecond > MaxDeleteExpireIntervalSecond {
 		intervalSecond = MaxDeleteExpireIntervalSecond
 	}
@@ -61,7 +54,7 @@ func NewWithInterval(intervalSecond int, logger *locallog.LocalLog) (*LocalCache
 	}
 	cache.scheduleDeleteExpire(intervalSecond)
 	cache.scheduleDeleteOverLimit()
-	return cache, nil
+	return cache
 }
 
 // SetCountLimit Key count limit,default is 1000000. The 15% of the keys with the most recent expiration time will be deleted if the number of keys exceeds the limit.

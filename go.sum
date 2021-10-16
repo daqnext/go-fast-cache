@@ -6,8 +6,8 @@ github.com/daqnext/LocalLog v0.2.4 h1:srDfF+3XjjHXzAHV2KtFHFOcmv0OrXGPjeysTUadCV
 github.com/daqnext/LocalLog v0.2.4/go.mod h1:A8uZz9GcPky3GJFiDXoQpjj6bP+JXHIOvhTW3UpTpXc=
 github.com/daqnext/fastjson v1.0.0 h1:uiJsz666J0rf2WTVOkPXUaYqXclSkGNCtcxxn/E/Dqs=
 github.com/daqnext/fastjson v1.0.0/go.mod h1:/l0vJWbS20xVMFJbyMUW6/x5FRpz79gGPm6oolCVFCI=
-github.com/daqnext/go-smart-routine v0.1.4 h1:QPAQHWkpZWHPEFxIhEeZdSWPAefoqwWvsmqPgfHvER0=
-github.com/daqnext/go-smart-routine v0.1.4/go.mod h1:sNfsCl1/96M5oCNIt1QxS99E0oD1ObnQA4vk5WMtMsE=
+github.com/daqnext/go-smart-routine v0.1.5 h1:vwOQJokRW/QvNdNi5ew7FhAaL65ytwQS9MR85pqg2Jo=
+github.com/daqnext/go-smart-routine v0.1.5/go.mod h1:sNfsCl1/96M5oCNIt1QxS99E0oD1ObnQA4vk5WMtMsE=
 github.com/daqnext/jsonparser v1.1.2 h1:wvFbVlDrc/CHST0pBUkMBi+g/jdHAlDWTGS1OnQOQu8=
 github.com/daqnext/jsonparser v1.1.2/go.mod h1:B0HLHwPJV3n69nZ2Ei8Np/BVHEotzvvEWpCc/FQ7p80=
 github.com/daqnext/utils v0.0.6 h1:/N5scIMsSCbZjAywnCQR9h5sBOcd/S6DjqvWbw1katY=

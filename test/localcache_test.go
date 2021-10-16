@@ -36,8 +36,8 @@ func init() {
 }
 
 func Test_main(t *testing.T) {
-	lc, _ := localcache.New(log) // or use NewWithInterval(intervalSecond int) custom the schedule job interval
-	lc.SetCountLimit(10000)      //if not set default is 100000
+	lc := localcache.New(log) // or use NewWithInterval(intervalSecond int) custom the schedule job interval
+	lc.SetCountLimit(10000)   //if not set default is 100000
 
 	//set
 	lc.Set("foo", "bar", 300)
@@ -72,7 +72,7 @@ func Test_main(t *testing.T) {
 }
 
 func Test_Set(t *testing.T) {
-	lc, _ := localcache.NewWithInterval(1, log)
+	lc := localcache.NewWithInterval(1, log)
 	for i := 0; i < 100000; i++ {
 		lc.Set(strconv.Itoa(i), "aaaaaaaaaaaaaaaaaaaaaaa", 60)
 	}
@@ -84,7 +84,7 @@ func Test_Set(t *testing.T) {
 }
 
 func Test_Get(t *testing.T) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	for i := 0; i < 100000; i++ {
 		lc.Set(strconv.Itoa(i), "aaaaaaaaaaaaaaaaaaaaaaa", 60)
 	}
@@ -100,7 +100,7 @@ func Test_Get(t *testing.T) {
 }
 
 func Test_Expire(t *testing.T) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	lc.Set("1", "111", 5)
 	lc.Set("2", "111", 18)
 	lc.Set("3", "111", 23)
@@ -134,7 +134,7 @@ func Test_Expire(t *testing.T) {
 
 func Test_SetAndRemove(t *testing.T) {
 	a := Person{"Jack", 18, "America"}
-	lc, _ := localcache.NewWithInterval(1, log)
+	lc := localcache.NewWithInterval(1, log)
 
 	log.Println("start")
 	printMemStats()
@@ -158,7 +158,7 @@ func Test_SetAndRemove(t *testing.T) {
 
 func Test_BigAmountKey(t *testing.T) {
 	a := Person{"Jack", 18, "America"}
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 
 	log.Println("start")
 	printMemStats()
@@ -205,7 +205,7 @@ func Test_BigAmountKey(t *testing.T) {
 }
 
 func Test_RandSet(t *testing.T) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := Person{"Jack", 18, "America"}
 
 	lc.Set("a", a, 15)
@@ -253,7 +253,7 @@ func Test_RandSet(t *testing.T) {
 }
 
 func Test_KeepTTL(t *testing.T) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := Person{"Ma Yun", 58, "China"}
 	b := Person{"Jack Ma", 18, "America"}
 
@@ -289,7 +289,7 @@ func Test_KeepTTL(t *testing.T) {
 }
 
 func Test_SetTTL(t *testing.T) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := Person{"Ma Yun", 58, "China"}
 
 	ttls := []int64{1, 20000, ttltype.Keep, -100, 200, 45, 346547457457457, -20000, 434, 9}
@@ -354,7 +354,7 @@ func Test_SyncMap(t *testing.T) {
 }
 
 func BenchmarkLocalCache_SetPointer(b *testing.B) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := &Person{"Jack", 18, "America"}
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -364,7 +364,7 @@ func BenchmarkLocalCache_SetPointer(b *testing.B) {
 }
 
 func BenchmarkLocalCache_SetStruct(b *testing.B) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := Person{"Jack", 18, "America"}
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -374,7 +374,7 @@ func BenchmarkLocalCache_SetStruct(b *testing.B) {
 }
 
 func BenchmarkLocalCache_GetPointer(b *testing.B) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := &Person{"Jack", 18, "America"}
 	lc.Set("1", a, 300)
 	var e *Person
@@ -389,7 +389,7 @@ func BenchmarkLocalCache_GetPointer(b *testing.B) {
 }
 
 func BenchmarkLocalCache_GetStruct(b *testing.B) {
-	lc, _ := localcache.New(log)
+	lc := localcache.New(log)
 	a := Person{"Jack", 18, "America"}
 	lc.Set("1", a, 300)
 	var e Person
