@@ -1,8 +1,11 @@
 package go_fast_cache
 
 import (
+	"errors"
+	locallog "github.com/daqnext/LocalLog/log"
 	"github.com/daqnext/go-fast-cache/sortedset"
 	"github.com/daqnext/go-fast-cache/ttltype"
+	"github.com/daqnext/go-smart-routine/sr"
 	"sync"
 	"time"
 )
@@ -22,21 +25,29 @@ type LocalCache struct {
 	s          *sortedset.SortedSet
 	countLimit int64
 	lock       sync.Mutex
+	llog       *locallog.LocalLog
 }
 
 // New Instance of localCache, the interval of scheduleDeleteExpire job use the default value 5 seconds
-func New() *LocalCache {
+func New(logger *locallog.LocalLog) (*LocalCache, error) {
+	if logger == nil {
+		return nil, errors.New("logger is nil")
+	}
 	cache := &LocalCache{
 		s:          sortedset.Make(),
 		countLimit: DefaultCountLimit,
+		llog:       logger,
 	}
 	cache.scheduleDeleteExpire(5)
 	cache.scheduleDeleteOverLimit()
-	return cache
+	return cache, nil
 }
 
 // NewWithInterval Instance of localCache, param intervalSecond defines the interval of scheduleDeleteExpire job, if intervalSecond <=0,it will use the default value 5 seconds
-func NewWithInterval(intervalSecond int) *LocalCache {
+func NewWithInterval(intervalSecond int, logger *locallog.LocalLog) (*LocalCache, error) {
+	if logger == nil {
+		return nil, errors.New("logger is nil")
+	}
 	if intervalSecond > MaxDeleteExpireIntervalSecond {
 		intervalSecond = MaxDeleteExpireIntervalSecond
 	}
@@ -46,10 +57,11 @@ func NewWithInterval(intervalSecond int) *LocalCache {
 	cache := &LocalCache{
 		s:          sortedset.Make(),
 		countLimit: DefaultCountLimit,
+		llog:       logger,
 	}
 	cache.scheduleDeleteExpire(intervalSecond)
 	cache.scheduleDeleteOverLimit()
-	return cache
+	return cache, nil
 }
 
 // SetCountLimit Key count limit,default is 1000000. The 15% of the keys with the most recent expiration time will be deleted if the number of keys exceeds the limit.
@@ -112,7 +124,7 @@ func (lc *LocalCache) ttl(key string) (int64, bool) {
 }
 
 func (lc *LocalCache) scheduleDeleteOverLimit() {
-	go func() {
+	sr.New_Panic_Redo(func() {
 		time.Sleep(500 * time.Millisecond)
 		for {
 			time.Sleep(1 * time.Second)
@@ -122,12 +134,12 @@ func (lc *LocalCache) scheduleDeleteOverLimit() {
 				lc.s.RemoveByRank(0, int64(deleteCount))
 			}
 		}
-	}()
+	}, lc.llog).Start()
 }
 
 // ScheduleDeleteExpire delete expired keys
 func (lc *LocalCache) scheduleDeleteExpire(intervalSecond int) {
-	go func() {
+	sr.New_Panic_Redo(func() {
 		for {
 			time.Sleep(time.Duration(intervalSecond) * time.Second)
 			//log.Println("scheduleDeleteExpire start")
@@ -135,7 +147,7 @@ func (lc *LocalCache) scheduleDeleteExpire(intervalSecond int) {
 			//remove expired keys
 			lc.s.RemoveByScore(max)
 		}
-	}()
+	}, lc.llog).Start()
 }
 
 func (lc *LocalCache) GetLen() int64 {

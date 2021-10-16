@@ -22,7 +22,15 @@ import (
 //new a localcache instance with default config
 //DefaultDeleteExpireIntervalSecond(Schedule job for delete expired key interval) is 5 seconds
 //DefaultCountLimit(Max key-value pair count) is 1000,000
-lc := localcache.New() 
+
+log, err := locallog.New(path_util.GetAbsPath("logs"), 2, 20, 30)
+if err != nil {
+    panic(err.Error())
+}
+lc,err := localcache.New(log)
+if err != nil {
+    panic(err.Error())
+}
 
 //set
 //Set(key string, value interface{}, ttlSecond int64)
@@ -59,7 +67,14 @@ log.Println(lc.Get("c"))
 ### custom DeleteExpireIntervalSecond and key-value pair CountLimit
 ```go
 //new instance
-lc := localcache.NewWithInterval(20) //custom schedule job interval(second) for delete expired key
+log, err := locallog.New(path_util.GetAbsPath("logs"), 2, 20, 30)
+if err != nil {
+    panic(err.Error())
+}
+lc,err := localcache.NewWithInterval(20,log) //custom schedule job interval(second) for delete expired key
+if err != nil {
+    panic(err.Error())
+}
 lc.SetCountLimit(10000) //custom the max key-value pair count
 ```
 
