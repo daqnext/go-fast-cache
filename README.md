@@ -54,6 +54,10 @@ log.Println(lc.Get("b"))
 log.Println(lc.Get("b*"))
 log.Println(lc.Get("c"))
 
+//delete
+lc.Delete("a")
+lc.Delete("b")
+
 //overwrite
 log.Println("---set overwrite ---")
 log.Println(lc.Get("c"))
