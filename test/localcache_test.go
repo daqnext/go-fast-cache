@@ -99,6 +99,31 @@ func Test_Get(t *testing.T) {
 	}
 }
 
+func Test_Delete(t *testing.T) {
+	lc := localcache.New(log)
+	a := &Person{"Jack", 18, "London"}
+	lc.Set("a", a, 300)
+	lc.Set("b", a, 300)
+
+	v, ttl, exist := lc.Get("a")
+	log.Println("get a")
+	log.Println(v, ttl, exist)
+
+	log.Println("delete a")
+	lc.Delete("a")
+
+	v, ttl, exist = lc.Get("a")
+	log.Println("get a")
+	log.Println(v, ttl, exist)
+
+	v, ttl, exist = lc.Get("b")
+	log.Println("get b")
+	log.Println(v, ttl, exist)
+
+	log.Println("origin a")
+	log.Println(*a)
+}
+
 func Test_Expire(t *testing.T) {
 	lc := localcache.New(log)
 	lc.Set("1", "111", 5)

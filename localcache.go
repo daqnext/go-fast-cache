@@ -103,6 +103,10 @@ func (lc *LocalCache) Set(key string, value interface{}, ttlSecond int64) {
 	lc.s.Add(key, expireTime, value)
 }
 
+func (lc *LocalCache) Delete(key string) {
+	lc.s.Remove(key)
+}
+
 // TTL get ttl of a key with second
 func (lc *LocalCache) ttl(key string) (int64, bool) {
 	e, exist := lc.s.Get(key)

@@ -66,6 +66,20 @@ func (sortedSet *SortedSet) Add(member string, score int64, value interface{}) {
 	}
 }
 
+func (sortedSet *SortedSet) Remove(member string) {
+	sortedSet.dict.Delete(member)
+	element, exist := sortedSet.dict.Load(member)
+	if !exist {
+		return
+	}
+	atomic.AddInt64(&sortedSet.elementCount, -1)
+	elementScore := element.(*Element).Score
+	fc := func() {
+		sortedSet.skiplist.remove(member, elementScore)
+	}
+	sortedSet.slChannel <- fc
+}
+
 // Len returns number of members in set
 func (sortedSet *SortedSet) Len() int64 {
 	return sortedSet.elementCount
