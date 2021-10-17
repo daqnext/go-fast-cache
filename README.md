@@ -27,10 +27,7 @@ log, err := locallog.New(path_util.GetAbsPath("logs"), 2, 20, 30)
 if err != nil {
     panic(err.Error())
 }
-lc,err := localcache.New(log)
-if err != nil {
-    panic(err.Error())
-}
+lc := localcache.New(log)
 
 //set
 //Set(key string, value interface{}, ttlSecond int64)
