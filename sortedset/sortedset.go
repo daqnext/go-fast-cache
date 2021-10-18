@@ -67,7 +67,6 @@ func (sortedSet *SortedSet) Add(member string, score int64, value interface{}) {
 }
 
 func (sortedSet *SortedSet) Remove(member string) {
-	sortedSet.dict.Delete(member)
 	element, exist := sortedSet.dict.Load(member)
 	if !exist {
 		return
@@ -78,6 +77,7 @@ func (sortedSet *SortedSet) Remove(member string) {
 		sortedSet.skiplist.remove(member, elementScore)
 	}
 	sortedSet.slChannel <- fc
+	sortedSet.dict.Delete(member)
 }
 
 // Len returns number of members in set

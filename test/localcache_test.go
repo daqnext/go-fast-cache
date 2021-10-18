@@ -102,8 +102,8 @@ func Test_Get(t *testing.T) {
 func Test_Delete(t *testing.T) {
 	lc := localcache.New(log)
 	a := &Person{"Jack", 18, "London"}
-	lc.Set("a", a, 300)
-	lc.Set("b", a, 300)
+	lc.Set("a", a, 5)
+	lc.Set("b", a, 5)
 
 	v, ttl, exist := lc.Get("a")
 	log.Println("get a")
@@ -122,6 +122,8 @@ func Test_Delete(t *testing.T) {
 
 	log.Println("origin a")
 	log.Println(*a)
+
+	time.Sleep(500 * time.Second)
 }
 
 func Test_Expire(t *testing.T) {
