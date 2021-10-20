@@ -150,3 +150,16 @@ func (lc *LocalCache) scheduleDeleteExpire(intervalSecond int) {
 func (lc *LocalCache) GetLen() int64 {
 	return lc.s.Len()
 }
+
+func (lc *LocalCache) SetRand(key string, ttlSecond int64) {
+	rs := genRandStr(20)
+	lc.Set(key, rs, ttlSecond)
+}
+
+func (lc *LocalCache) GetRand(key string) string {
+	v, _, exist := lc.Get(key)
+	if !exist {
+		return ""
+	}
+	return v.(string)
+}

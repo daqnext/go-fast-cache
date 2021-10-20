@@ -231,6 +231,17 @@ func Test_BigAmountKey(t *testing.T) {
 	//time.Sleep(1*time.Hour)
 }
 
+func Test_RandStr(t *testing.T) {
+	lc := localcache.New(log)
+
+	lc.SetRand("abc", 5)
+
+	for {
+		log.Println(lc.GetRand("abc"))
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func Test_RandSet(t *testing.T) {
 	lc := localcache.New(log)
 	a := Person{"Jack", 18, "America"}
