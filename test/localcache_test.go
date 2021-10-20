@@ -234,7 +234,7 @@ func Test_BigAmountKey(t *testing.T) {
 func Test_RandStr(t *testing.T) {
 	lc := localcache.New(log)
 
-	lc.SetRand("abc", 5)
+	log.Println(lc.SetRand("abc", 5))
 
 	for {
 		log.Println(lc.GetRand("abc"))

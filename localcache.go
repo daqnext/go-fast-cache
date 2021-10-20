@@ -5,6 +5,7 @@ import (
 	"github.com/daqnext/go-fast-cache/sortedset"
 	"github.com/daqnext/go-fast-cache/ttltype"
 	"github.com/daqnext/go-smart-routine/sr"
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -29,6 +30,7 @@ type LocalCache struct {
 
 // New Instance of localCache, the interval of scheduleDeleteExpire job use the default value 5 seconds
 func New(logger *locallog.LocalLog) *LocalCache {
+	rand.Seed(time.Now().UnixNano())
 	cache := &LocalCache{
 		s:          sortedset.Make(),
 		countLimit: DefaultCountLimit,
@@ -151,9 +153,10 @@ func (lc *LocalCache) GetLen() int64 {
 	return lc.s.Len()
 }
 
-func (lc *LocalCache) SetRand(key string, ttlSecond int64) {
+func (lc *LocalCache) SetRand(key string, ttlSecond int64) string {
 	rs := genRandStr(20)
 	lc.Set(key, rs, ttlSecond)
+	return rs
 }
 
 func (lc *LocalCache) GetRand(key string) string {
